@@ -25,7 +25,7 @@ public class JsonSchemaHandler {
 	
 	//directory path of the json schema files
 	//should be changed accordingly
-	String schemaFilesPath = "/home/aldemirenes/temp/jsonfiles";
+	String schemaFilesPath = CommonMethods.getSchemaFilesPath();;
 	
 	@GET
 	@Path("/{param}")
@@ -38,17 +38,15 @@ public class JsonSchemaHandler {
 		//create file path according to the schemaID
 		String currFilePath = schemaFilesPath + "/" + schemaID + ".json";
 	    
-		File jsonSchemaFile = new File(currFilePath);
-		if(!jsonSchemaFile.exists()) {
+		if(!CommonMethods.checkFileExists(currFilePath)) {
 			//if wanted json schema does not exist, return error
 			String errorMsg = "Does not exist schema with this id";
 			resultJson.put("status", "error");
 			resultJson.put("message", errorMsg);
 			return Response.status(404).entity(resultJson.toString()).build(); 
 		}
-	    
-		byte[] encoded = Files.readAllBytes(Paths.get(currFilePath));
-		String jsonSchema = new String(encoded, StandardCharsets.UTF_8);
+	    		
+		String jsonSchema = CommonMethods.fileToString(currFilePath);
 		return Response.status(200).entity(jsonSchema).build(); 
 	}
 	
@@ -59,37 +57,29 @@ public class JsonSchemaHandler {
 	    resultJson.put("action", "uploadSchema");
 	    resultJson.put("id", schemaID);
 	    
-	    //check if new json is in a valid json format
-	    //if not converting the string to json will raise an exception
-	    try{
-			JSONObject jsonObj = new JSONObject(newJsonSchema);
-		} catch(org.json.JSONException e) {
-			String errorMsg = "Invalid JSON";
+	    if (!CommonMethods.isValidJson(newJsonSchema)) {
+	    	String errorMsg = "Invalid JSON";
 		    resultJson.put("status", "error");
 		    resultJson.put("message", errorMsg);
 			return Response.status(404).entity(resultJson.toString()).build();
-		}
+	    }
 	    
 	    //create file path according to the schemaID
 	    String currFilePath = schemaFilesPath + "/" + schemaID + ".json";
 		
-	    File jsonSchemaFile = new File(currFilePath);
-	    if(jsonSchemaFile.exists()) { 
+	    if(CommonMethods.checkFileExists(currFilePath)) { 
 	    	//if there exists schema with the same schemaID, return error
 	    	String errorMsg = "Exist schema with the same id";
 	    	resultJson.put("status", "error");
 	    	resultJson.put("message", errorMsg);
-	    	return Response.status(409).entity(resultJson.toString()).build(); //change response to json
+	    	return Response.status(409).entity(resultJson.toString()).build(); 
 	    }
 		
 	    //write json schema to file
-	    try {
-	    	jsonSchemaFile.createNewFile(); // if file already exists will do nothing 
-	    	PrintWriter out = new PrintWriter(currFilePath);
-	    	out.println(newJsonSchema);
-	    	out.close();
-	    } catch(IOException e) {
-			//TODO
+	    if (!CommonMethods.jsonToFile(currFilePath, newJsonSchema)) {
+	    	resultJson.put("status", "error");
+	    	resultJson.put("message", "occur problem while writing to file");	   
+	    	return Response.status(404).entity(resultJson.toString()).build();
 	    }
 	    
 	    resultJson.put("status", "success");	

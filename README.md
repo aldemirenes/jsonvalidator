@@ -9,6 +9,12 @@
  ### Build
  * After install the Eclipse Kepler IDE, necessary configurations can be made like showed in the link. [https://crunchify.com/step-by-step-guide-to-setup-and-install-apache-tomcat-server-in-eclipse-development-environment-ide/]
  * If project wanted to be served without using Eclipse, .war file should be created.    [ Right click project name in the Eclipse -> Export -> WAR file ] Created .war file should be placed in the webapps folder under the directory which is created after extracting the Apache Tomcat. Change the .war name to ROOT.war in order to serve project as default project. 
+ * config.properties file must be placed under the /opt/json-validator folder. Only attribute of this config file is schemaFilesPath which is schema files storing directory. 
+ Example config.properties file is liked that:
+
+```
+schemaFilesPath=/home/user/temp/jsonSchemaFiles 
+```  
  
 ### Endpoints
 

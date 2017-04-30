@@ -29,7 +29,7 @@ public class ValidateSchemaClass {
 	
 	//directory path of the json schema files
 	//should be changed accordingly
-	String schemaFilesPath = "/home/aldemirenes/temp/jsonfiles";
+	String schemaFilesPath = CommonMethods.getSchemaFilesPath();
  
 	@POST
 	@Path("/{param}")
@@ -41,20 +41,17 @@ public class ValidateSchemaClass {
 		
 	    //check if new json is in a valid json format
 	    //if not converting the string to json will raise an exception
-	    try{
-			JSONObject jsonObj = new JSONObject(newJson);
-		} catch(org.json.JSONException e) {
-			String errorMsg = "Invalid JSON";
+	    if (!CommonMethods.isValidJson(newJson)) {
+	    	String errorMsg = "Invalid JSON";
 		    resultJson.put("status", "error");
 		    resultJson.put("message", errorMsg);
 			return Response.status(404).entity(resultJson.toString()).build();
-		}
+	    }
 	    
 	    //create file path according to the schemaID
 	    String currFilePath = schemaFilesPath + "/" + schemaID + ".json";
 	    
-	    File jsonSchemaFile = new File(currFilePath);
-	    if(!jsonSchemaFile.exists()) { 
+	    if(!CommonMethods.checkFileExists(currFilePath)) { 
 	    	//if wanted json schema does not exist, return error
 	    	String errorMsg = "Does not exist schema with this id";
 	    	resultJson.put("status", "error");
@@ -62,19 +59,11 @@ public class ValidateSchemaClass {
 	    	return Response.status(404).entity(resultJson.toString()).build(); 
 	    }
 	   
-	    //convert content of the json file to string
-	    byte[] encoded = Files.readAllBytes(Paths.get(currFilePath));
-	    String jsonSchema = new String(encoded, StandardCharsets.UTF_8);
+	    //convert content of the json file to string    
+	    String jsonSchema = CommonMethods.fileToString(currFilePath);
+	    ProcessingReport report = CommonMethods.checkJsonAgainstSchema(jsonSchema, newJson);
 
-	    //convert json which is in string format to JsonNode
-	    ObjectMapper mapper = new ObjectMapper();
-	    JsonNode schemaNode = mapper.readTree(jsonSchema);
-	    JsonNode data = mapper.readTree(newJson);
-	    JsonSchemaFactory factory = JsonSchemaFactory.byDefault();
-	    // load the schema and validate
-	    JsonSchema schema = factory.getJsonSchema(schemaNode);
-	    ProcessingReport report = schema.validate(data);
-
+	    
 	    if (report.isSuccess()) {
 	    	resultJson.put("status", "success");
 	    } else {
