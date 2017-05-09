@@ -22,8 +22,6 @@ import com.github.fge.jsonschema.main.JsonSchema;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 
 public class CommonMethods {
-	//TODO
-	//unit tests
 	public static File getFile(String filePath) {
 		File jsonSchemaFile = new File(filePath);
 		if (jsonSchemaFile.exists() && !jsonSchemaFile.isDirectory()) {
@@ -49,7 +47,6 @@ public class CommonMethods {
 			String jsonSchema = new String(encoded, StandardCharsets.UTF_8);
 			return jsonSchema;
 		} catch (IOException e) {
-			e.printStackTrace();
 			return null;
 		}
 	} 
@@ -64,6 +61,8 @@ public class CommonMethods {
 			return false;
 		}
 	}
+	
+	
 	
 	public static boolean jsonToFile(String filePath, String newJsonSchema) {
 		try {
